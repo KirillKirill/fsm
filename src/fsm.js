@@ -9,6 +9,8 @@ class FSM {
         this.activeState = this.initial;
         this.states = config.states;
         this.transitions = config.transitions;
+        this.prevState = [this.activeState];
+        this.nextState = [];
     }
 
     /**
@@ -16,7 +18,9 @@ class FSM {
      * @returns {String}
      */
     getState() {
-        if (this.activeState) return this.activeState;
+        if (this.activeState) {
+            return this.activeState;
+        }
     }
 
     /**
@@ -24,7 +28,11 @@ class FSM {
      * @param state
      */
     changeState(state) {
-       if (state in this.states) this.activeState = state ;
+       if (state in this.states){
+           this.prevState.push(this.activeState);
+           this.activeState = state ;
+           this.nextState = [];
+       }
        else throw new Error();
     }
 
@@ -66,19 +74,32 @@ class FSM {
      * Returns false if undo is not available.
      * @returns {Boolean}
      */
-    undo() {}
+    undo() {
+        if (this.prevState.length <= 1) return false;
+        this.nextState.push(this.activeState);
+        this.activeState = this.prevState.pop();
+        return true;
+    }
 
     /**
      * Goes redo to state.
      * Returns false if redo is not available.
      * @returns {Boolean}
      */
-    redo() {}
+    redo() {
+        if (this.nextState.length < 1) return false;
+        this.prevState.push(this.activeState);
+        this.activeState = this.nextState.pop();
+        return true;
+    }
 
     /**
      * Clears transition history
      */
-    clearHistory() {}
+    clearHistory() {
+        this.prevState = [];
+        this.nextState = [];
+    }
 }
 
 module.exports = FSM;
